@@ -1,7 +1,8 @@
 from time import perf_counter
-from objects import Ball, Padel, Powerup, PowerupEffect, BallPowerupEffect, PaddlePowerupEffect, GameEventType, pygame, random
-import _menu
+import pygame
 import sys
+from objects import Ball
+import _menu
 
 pygame.init()
 

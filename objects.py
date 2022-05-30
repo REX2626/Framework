@@ -1,16 +1,7 @@
 import random
-from enum import Enum
 import pygame
-import math
 import os
 import sys
-
-
-class GameEventType(Enum):
-    NONE = 0
-    RALLY = 1
-    RED = 2
-    YELLOW = 3
 
 
 
@@ -201,13 +192,7 @@ class Ball(SquareEntity):
             self.y -= delta
 
     def collides_with_paddle_check(self, padel: Padel):
-        return self.rect().intersects_other_rect(padel.rect())        
-
-    def scored(self):
-        if self.x + self.width < 1:
-            return GameEventType.YELLOW
-        elif self.x > self.screen_width:
-            return GameEventType.RED
+        return self.rect().intersects_other_rect(padel.rect())
 
     def restart(self):
         self.x = self.screen_width / 2 - self.width / 2
@@ -226,134 +211,7 @@ def resource_path(relative_path):
     try:
         # PyInstaller creates a temp folder and stores path in _MEIPASS
         base_path = sys._MEIPASS
-    except Exception:
+    except AttributeError:
         base_path = os.path.abspath(".")
 
     return os.path.join(base_path, relative_path)
-
-
-class PowerupEffect:
-    pass
-
-
-class BallPowerupEffect(PowerupEffect):
-    def __init__(self, ball_effect_func) -> None:
-        self.ball_effect_func = ball_effect_func
-
-
-class PaddlePowerupEffect(PowerupEffect):
-    def __init__(self, paddle_effect_func) -> None:
-        self.paddle_effect_func = paddle_effect_func
-
-
-class PowerupType:
-    def __init__(self, name: str, image_path: str, *, weight: int, powerup_effect: PowerupEffect, width: float=0.05, height: float=0.05) -> None:
-        self.name = name
-        self.image_path = image_path
-        self.weight = weight
-        self.width = width
-        self.height = height
-        self.powerup_effect = powerup_effect
-
-class Powerup(SquareEntity):
-    POWERUP_TYPES = (
-        PowerupType("test",                   "./assets/test_powerup.png",             weight=0,  powerup_effect=PowerupEffect()),
-        PowerupType("speed_small",            "./assets/speed_powerup1.png",           weight=40, powerup_effect=BallPowerupEffect(
-            lambda ball: (
-                setattr(ball, "vx", ball.vx*1.4),
-                setattr(ball, "vy", ball.vy*1.4),
-                setattr(ball, "spinx", ball.spinx*1.4),
-                setattr(ball, "spiny", ball.spiny*1.4)
-            )
-        )),
-        PowerupType("speed_big",              "./assets/speed_powerup2.png",           weight=9,  powerup_effect=BallPowerupEffect(
-            lambda ball: (
-                setattr(ball, "vx", ball.vx*2),
-                setattr(ball, "vy", ball.vy*2),
-                setattr(ball, "spinx", ball.spinx*2),
-                setattr(ball, "spiny", ball.spiny*2)
-            )
-        )),
-        PowerupType("bounce",                 "./assets/bounce_powerup.png",           weight=40, powerup_effect=BallPowerupEffect(
-            lambda ball: (
-                setattr(ball, "vx", ball.vx*-1),
-                setattr(ball, "spinx", ball.spinx*-1),
-            )
-        )),
-        PowerupType("spin_small",             "./assets/spin_powerup1.png",            weight=30, powerup_effect=BallPowerupEffect(
-            lambda ball: (
-                setattr(ball, "spiny", ball.spiny + 0.8*sign(ball.spiny)),
-            )
-        )),
-        PowerupType("spin_big",               "./assets/spin_powerup2.png",            weight=8, powerup_effect=BallPowerupEffect(
-            lambda ball: (
-                setattr(ball, "spiny", ball.spiny + 1.5*sign(ball.spiny)),
-            )
-        )),
-        PowerupType("paddle_extention_small", "./assets/paddle_extension_powerup.png", weight=30, powerup_effect=PaddlePowerupEffect(
-            lambda recent_hit_paddle, other_paddle: (
-                setattr(recent_hit_paddle, "extra_height", recent_hit_paddle.height * 0.8),
-                setattr(recent_hit_paddle, "extra_height_change_rate", 
-                    - recent_hit_paddle.height * 0.8 / 8.0
-                ) # the 8 means it takes 8 seconds to revert to normal
-            )
-        )),
-        PowerupType("paddle_shrink_small",    "./assets/paddle_shrink_powerup.png",    weight=30, powerup_effect=PaddlePowerupEffect(
-            lambda recent_hit_paddle, other_paddle: (
-                setattr(other_paddle, "extra_height", other_paddle.height * -0.6),
-                setattr(other_paddle, "extra_height_change_rate", 
-                    - other_paddle.height * -0.6 / 6.0
-                ) # the 8 means it takes 8 seconds to revert to normal
-            )
-        ))
-    )
-
-    def __init__(self, x, y, screen_width,powerup_type: PowerupType) -> None:
-        super().__init__(x, y, powerup_type.width * screen_width, powerup_type.height * screen_width) # height * screen_width not a bug, ratio of width to height should be same
-        self.powerup_type = powerup_type
-
-    @classmethod
-    def random_powerup_type(cls) -> PowerupType:
-        '''Returns a random `PowerupType` object, where types with a higher `weight` are more likely to be picked'''
-        return random.choices(
-            population=cls.POWERUP_TYPES,
-            weights=tuple(pt.weight for pt in cls.POWERUP_TYPES),
-            k=1 # k = the number of things to be chosen
-        )[0] # indexed at 0 because this returns a list, but it is only 1 element as k=1
-
-    @classmethod
-    def create_random(cls, screen_width, min_x, max_x, min_y, max_y, other_powerups_present: "list[Powerup]") -> "Powerup":
-        powerup_type = cls.random_powerup_type()
-
-        min_x, max_x, min_y, max_y, width, height = (round(x) for x in (min_x, max_x, min_y, max_y, powerup_type.width * screen_width, powerup_type.height * screen_width)) # height is supposed to be * screen_width for ratio not a bug
-        if max_x - min_x - width  < 0: raise ValueError(f"No area to place powerup of width {width} when min_x is {min_x} and max_x is {max_x}")
-        if max_y - min_y - height < 0: raise ValueError(f"No area to place powerup of height {height} when min_y is {min_y} and max_y is {max_y}")
-
-        for _ in range(30): # put it in a random place until it is not touching any other powerups
-            new_powerup = Powerup(
-                x=random.randrange(min_x, max_x - width),
-                y=random.randrange(min_y, max_y - height),
-                screen_width=screen_width,
-                powerup_type=powerup_type
-            )
-            passed = True
-            for other_powerup in other_powerups_present:
-                if new_powerup.rect().intersects_other_rect(other_powerup.rect()):
-                    passed = False
-                    break
-            if passed: return new_powerup
-
-        return new_powerup # either we got REALLY unlucky, or there is no spot for it in which case just give up and return it anyways
-
-    def handle_collisions(self, ball: Ball) -> "bool":
-        if not self.rect().intersects_other_rect(ball.rect()): return False
-
-        # TODO: do cool stuff e.g. increase ball speed etc
-
-        return True
-
-    def draw(self, window: "pygame.Surface"):
-        if not hasattr(self, "image"):
-            self.image = pygame.image.load(resource_path(self.powerup_type.image_path))
-            self.image = pygame.transform.scale(self.image, (self.width, self.height)).convert_alpha()
-        window.blit(self.image, [self.x, self.y])
