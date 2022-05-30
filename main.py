@@ -232,17 +232,6 @@ def main(red_handle_movement, menu: "_menu.Menu"):
 
     ball = Ball(WIDTH, HEIGHT, BALL_WIDTH, BALL_HEIGHT, TEXT_BAR_HEIGHT)
 
-    powerups: "list[Powerup]" = []
-    for _ in range(5):
-        powerups.append(Powerup.create_random(
-            screen_width=WIDTH,
-            min_x=WIDTH * POWERUP_MIN_X_RATIO,
-            max_x=WIDTH * POWERUP_MAX_X_RATIO,
-            min_y=(HEIGHT - TEXT_BAR_HEIGHT) * POWERUP_MIN_Y_RATIO + TEXT_BAR_HEIGHT,
-            max_y=(HEIGHT - TEXT_BAR_HEIGHT) * POWERUP_MAX_Y_RATIO + TEXT_BAR_HEIGHT,
-            other_powerups_present=powerups
-        ))
-
     running = True
     not_paused = True
     while running:
@@ -254,7 +243,7 @@ def main(red_handle_movement, menu: "_menu.Menu"):
             red = red_handle_movement(keys_pressed, red, ball, speed)
             yellow = yellow_handle_movement(keys_pressed, yellow, speed)
 
-            game_event = handle_ball_movement(ball, yellow, red, powerups, speed, delta_time)
+            game_event = handle_ball_movement(ball, yellow, red, speed, delta_time)
             if game_event == GameEventType.RED:
                 red_score += 1
                 rally = 0
@@ -264,7 +253,7 @@ def main(red_handle_movement, menu: "_menu.Menu"):
             elif game_event == GameEventType.RALLY:
                 rally += 1
 
-            draw_window(yellow, red, ball, powerups, red_score, yellow_score, rally)
+            draw_window(yellow, red, ball, red_score, yellow_score, rally)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -273,7 +262,7 @@ def main(red_handle_movement, menu: "_menu.Menu"):
                     quit()
 
                 elif event.type == pygame.VIDEORESIZE:
-                    update_playing_screen_size(menu, red, yellow, ball, powerups)
+                    update_playing_screen_size(menu, red, yellow, ball)
 
                 elif event.type == pygame.KEYDOWN and event.__dict__["key"] == pygame.K_ESCAPE:
                     not_paused = False
@@ -288,8 +277,8 @@ def main(red_handle_movement, menu: "_menu.Menu"):
                 quit()
 
             elif event.type == pygame.VIDEORESIZE:
-                update_playing_screen_size(menu, red, yellow, ball, powerups)
-                draw_window(yellow, red, ball, powerups, red_score, yellow_score, rally)
+                update_playing_screen_size(menu, red, yellow, ball)
+                draw_window(yellow, red, ball, red_score, yellow_score, rally)
                 menu.pause()
 
             elif event.type == pygame.KEYDOWN and event.__dict__["key"] == pygame.K_ESCAPE:
