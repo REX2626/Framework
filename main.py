@@ -5,110 +5,92 @@ import sys
 
 pygame.init()
 
-WIN = pygame.display.set_mode(flags=pygame.FULLSCREEN+pygame.RESIZABLE)
-pygame.display.set_caption("GamingX Pong")
+WIN = pygame.display.set_mode(flags=pygame.FULLSCREEN + pygame.RESIZABLE)
+pygame.display.set_caption("GamingX Framework")
 WIDTH, HEIGHT = pygame.display.get_window_size()
 FULLSCREEN = True
 FULLSCREEN_SIZE = WIDTH, HEIGHT
 WINDOW_SIZE = WIDTH * 0.8, HEIGHT * 0.8
 SIZE_LINK = True
 
-SPEED = 230
-variable_speed = SPEED
-last_collided = None
-
 WHITE = (255, 255, 255)
 LIGHT_GREY = (120, 120, 120)
 MEDIUM_GREY = (60, 60, 60)
 DARK_GREY = (30, 30, 30)
 BLACK = (0, 0, 0)
-RED = (255, 0, 0)
-YELLOW = (255, 255, 0)
 
-PADEL_WIDTH, PADEL_HEIGHT = 13, 55
-PADEL_INDENT = 10
-PADEL_SIDE_INDENT = 80
-
-BALL_WIDTH, BALL_HEIGHT = 8, 8
 
 def update_screen_size():
-    global RED_PADEL_X, YELLOW_PADEL_X, PADEL_Y, DASHED_WIDTH, DASHED_X, DASHED_LENGTH, SCORE_FONT, TEXT_BAR_HEIGHT, BALL_WIDTH, BALL_HEIGHT, PADEL_WIDTH, PADEL_HEIGHT, SPEED, variable_speed
-    SCORE_FONT = pygame.font.SysFont("comicsans", round(WIDTH / 45))
-    TEXT_BAR_HEIGHT = SCORE_FONT.get_height()
-    RED_PADEL_X = PADEL_SIDE_INDENT
-    YELLOW_PADEL_X = WIDTH - PADEL_SIDE_INDENT - PADEL_WIDTH
-    PADEL_Y = TEXT_BAR_HEIGHT + (HEIGHT - TEXT_BAR_HEIGHT) / 2 - PADEL_HEIGHT / 2
-    DASHED_WIDTH = WIDTH / 225
-    DASHED_X = round(WIDTH / 2 - DASHED_WIDTH / 2)
-    DASHED_LENGTH = (HEIGHT - TEXT_BAR_HEIGHT - 2 * PADEL_INDENT) / 9
+    """Updates objects size and position with new screen size"""
+    "Adjust any constants"
 
     if SIZE_LINK:
-        BALL_WIDTH = BALL_HEIGHT = round(WIDTH / 112.5)
-        PADEL_WIDTH = round(WIDTH / (900 / 13))
-        PADEL_HEIGHT = round(HEIGHT / (500 / 55))
-        SPEED = round(WIDTH / (900 / 230))
-        variable_speed = SPEED
+        "Adjust objects size"
 
 
 def update_playing_screen_size(menu: "_menu.Menu"):
+    """Updates live objects positions"""
+
     global WIDTH, HEIGHT
-    #ratios'
+
+    "Get objects position on screen by ratio e.g. 20% of the screen"
 
     WIDTH, HEIGHT = pygame.display.get_window_size()
     menu.resize()
-    # set x and y
 
-    # clipping
+    "Set the x and y of objects based on new width and height, with ratios"
+
+    "Clip the coords of any object out of bounds"
 
     
-def draw_window():
+def draw_window(objects):
+    """Draw window"""
     WIN.fill(BLACK)
 
-    pygame.draw.rect(WIN, DARK_GREY, (0, 0, WIDTH, TEXT_BAR_HEIGHT)) # the background for the text bar at the top)
+    for object in objects:
+        object.draw()
 
     pygame.display.update()
 
 
-def handle_player_movement(keys_pressed, red: Padel, _, speed):
-    red.moving_up = False
-    red.moving_down = False
-    if keys_pressed[pygame.K_w] and red.get_y() - speed > TEXT_BAR_HEIGHT + PADEL_INDENT:  # UP
-        red.y -= speed
-        red.moving_up = True
-    if keys_pressed[pygame.K_s] and red.get_y() + speed + red.get_height() < HEIGHT - PADEL_INDENT:  # DOWN
-        red.y += speed
-        red.moving_down = True
-    return red
+def handle_player_movement(keys_pressed, objects):
+    """Adjust player velocity depnding on input. NOTE: Not for changing position"""
+    # Example:
+    if keys_pressed[pygame.K_UP]:
+        "move_up()"
 
 
-def handle_movement(entities, speed, dt: "float"):
-    
-    for entity in entities:
-        entity.update(dt, speed)
+def handle_movement(objects, delta_time):
+    """Handles movement for all objects, adjusts positions based on velocity"""
+    for object in objects:
+        object.update_pos(delta_time)
 
 
 def quit():
+    """Stops the program"""
     pygame.quit()
     sys.exit(0)
 
 
 def main(menu: "_menu.Menu"):
+    """Main game loop"""
     delta_time = 0
 
-    example_object = Padel(RED_PADEL_X, PADEL_Y, PADEL_WIDTH, PADEL_HEIGHT)
+    example_object = Ball
+    objects = [example_object]
 
     running = True
-    not_paused = True
+    paused = False
     while running:
-        while not_paused:
+        while not paused:
             time1 = perf_counter()
-            speed = variable_speed * delta_time
 
             keys_pressed = pygame.key.get_pressed()
 
-            handle_movement([example_object], speed, delta_time)
+            handle_player_movement(keys_pressed, objects)
+            handle_movement(objects, delta_time)
 
-            draw_window()
+            draw_window(objects)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -118,7 +100,7 @@ def main(menu: "_menu.Menu"):
                     update_playing_screen_size(menu)
 
                 elif event.type == pygame.KEYDOWN and event.__dict__["key"] == pygame.K_ESCAPE:
-                    not_paused = False
+                    paused = True
                     menu.pause()
 
             time2 = perf_counter()
@@ -131,11 +113,11 @@ def main(menu: "_menu.Menu"):
 
             elif event.type == pygame.VIDEORESIZE:
                 update_playing_screen_size(menu)
-                draw_window()
+                draw_window(objects)
                 menu.pause()
 
             elif event.type == pygame.KEYDOWN and event.__dict__["key"] == pygame.K_ESCAPE:
-                not_paused = True
+                paused = False
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 mouse = pygame.mouse.get_pos()
