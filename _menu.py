@@ -11,8 +11,8 @@ class Menu():
         self.setting_chosen = None
 
         self.title_text =                  Widget(lambda: main.WIDTH / 2, lambda: main.HEIGHT / 7    , "Gaming X Pong", main.WHITE, "comicsans", 40)
-        self.singleplayer_button =         Button(lambda: main.WIDTH / 2, lambda: main.HEIGHT / 7 * 2, lambda: main.main(main.red_bot_movement, self)        , "SINGLE PLAYER", main.WHITE, self.box_colour, "comicsans", 40)
-        self.multiplayer_button =          Button(lambda: main.WIDTH / 2, lambda: main.HEIGHT / 7 * 3, lambda: main.main(main.red_player_movement, self)     , "MULTIPLAYER"  , main.WHITE, self.box_colour, "comicsans", 40)
+        self.singleplayer_button =         Button(lambda: main.WIDTH / 2, lambda: main.HEIGHT / 7 * 2, lambda: main.main(self)        , "SINGLE PLAYER", main.WHITE, self.box_colour, "comicsans", 40)
+        self.multiplayer_button =          Button(lambda: main.WIDTH / 2, lambda: main.HEIGHT / 7 * 3, lambda: main.main(self)     , "MULTIPLAYER"  , main.WHITE, self.box_colour, "comicsans", 40)
         self.settings_button =             Button(lambda: main.WIDTH / 2, lambda: main.HEIGHT / 7 * 4, self.settings                                         , "SETTINGS"     , main.WHITE, self.box_colour, "comicsans", 40)
         self.info_button =                 Button(lambda: main.WIDTH / 2, lambda: main.HEIGHT / 7 * 5, self.info                                             , "INFO"         , main.WHITE, self.box_colour, "comicsans", 40)
         self.quit_button =                 Button(lambda: main.WIDTH / 2, lambda: main.HEIGHT / 7 * 6, main.quit                                             , "QUIT"         , main.WHITE, self.box_colour, "comicsans", 40)
