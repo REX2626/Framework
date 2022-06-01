@@ -63,9 +63,9 @@ def handle_player_movement(keys_pressed, objects):
 
 def handle_movement(objects: list[MoveableObject], static_objects: list[Object], delta_time):
     """Handles movement for all objects, adjusts positions based on velocity"""
-    dt = delta_time
-
+    
     # Loop until every object has moved for the given time
+    dt = delta_time
     while dt:
         # Find two objects closest to collision
         closest_time = dt
@@ -127,6 +127,7 @@ def handle_movement(objects: list[MoveableObject], static_objects: list[Object],
 
 
     # Do the same thing but with y axis
+    dt = delta_time
     while dt:
         # Find two objects closest to collision
         closest_time = dt
