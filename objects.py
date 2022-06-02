@@ -2,7 +2,32 @@ import pygame
 import os
 import sys
 
+"""
+COLLISION X -168 861.1587511929691 758.3562057974046 0.02643910750532541
+756.7169811320745, 856.7169811320745
+UPDATED X -62 856.7169811320745 756.7169811320745 0.0005712925175203054
 
+COLLISION Y -19
+353.64705882352933, 453.64705882352933
+
+COLLISION Y -159
+470.65436241610723, 570.6543624161072
+
+COLLISION Y -100
+0.0, 1.0"""
+
+#  974.7735831507136
+#1,074.7735831507134
+#  974.773583150713555205
+#1,074.773583150713491041
+class Dummy():
+    def __init__(self, x, y) -> None:
+        self.x = x
+        self.y = y
+
+one = Dummy(10, 10)
+two = Dummy(20, 20)
+print(1)
 
 def get_path(relative_path):
     """ Get absolute path to resource, works for dev and for PyInstaller """

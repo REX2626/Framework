@@ -75,7 +75,7 @@ def handle_movement(objects: list[MoveableObject], static_objects: list[Object],
         for object1 in objects:
             for object2 in objects:
 
-                dist_between = min(object2.x - (object1.x + object1.width), (object2.x + object2.width) - object1.x, key=abs) # Closest distance between two objects, adjust for width
+                dist_between = min(object2.x - (object1.x + object1.width), (object2.x + object2.width) - object1.x, key=abs) # Closest distance between two objects, adjusted for width
                 rel_vel = object1.vx - object2.vx # Relative velocity between two objects
                 if rel_vel == 0 or dist_between == 0: continue # Two objects will never collide if moving at same velocity
                 coll_time = dist_between / rel_vel # Time until the two objects collide
@@ -83,61 +83,11 @@ def handle_movement(objects: list[MoveableObject], static_objects: list[Object],
                 if coll_time >= 0 and coll_time < closest_time and overlapping_y(object1, object2, coll_time): # Check that two objects will collide and that the time is closer than closest_time
                     closest_time = coll_time
                     closest_objects = object1, object2
+                    collision_x = True
+                    collision_y = False
 
-        # Check for any closer collisions with immoveable_objects
-        for object1 in objects:
-            for object2 in static_objects:
-
-                dist_between = min(object2.x - (object1.x + object1.width), (object2.x + object2.width) - object1.x, key=abs) # Closest distance between two objects, adjust for width
-                rel_vel = object1.vx # Relative velocity between two objects
-                if rel_vel == 0 or dist_between == 0: continue # Two objects will never collide if moving at same velocity and if touching, Moveable_Object will be moving away
-                coll_time = dist_between / rel_vel # Time until the two objects collide
-
-                if coll_time >= 0 and coll_time < closest_time: # Check that two objects will collide and that the time is closer than closest_time and that two objects are at overlapping x width
-                    closest_time = coll_time
-                    closest_objects = object1, object2
-
-        if closest_objects[0]: # If the two objects collided
-
-            # Move closest objects to collision point
-            closest_objects[0].x += closest_time * closest_objects[0].vx
-            if type(closest_objects[1]) == MoveableObject:
-                closest_objects[1].x += closest_time * closest_objects[1].vx
-
-            # Set the two objects velocity to the average of both
-            if type(closest_objects[1]) == MoveableObject:
-                closest_objects[0].vx, closest_objects[1].vx = closest_objects[1].vx, closest_objects[0].vx # Swap objects velocities, simulating 100% energy transfer
-            else:
-                closest_objects[0].vx *= -1
-
-            # Move all other objects the same amount that the collision objects moved
-            for object in objects:
-                if object not in closest_objects:
-                    object.x += closest_time * object.vx
-
-            # Subtract closest_time from dt as the game time has advance by closest_time seconds
-            dt -= closest_time
-
-        # If no collision
-        else:
-            # Move objects the rest of the way, then break to move onto the y velocity
-            for object in objects:
-                object.x += dt * object.vx
-            break
-
-
-    # Do the same thing but with y axis
-    dt = delta_time
-    while dt:
-        # Find two objects closest to collision
-        closest_time = dt
-        closest_objects = None, None
-
-        # For each object, find it's closest collision to every object
-        for object1 in objects:
-            for object2 in objects:
-
-                dist_between = min(object2.y - (object1.y + object1.width), (object2.y + object2.width) - object1.y, key=abs) # Closest distance between two objects, adjust for width
+                # Same again for y axis
+                dist_between = min(object2.y - (object1.y + object1.height), (object2.y + object2.height) - object1.y, key=abs) # Closest distance between two objects, adjusted for height
                 rel_vel = object1.vy - object2.vy # Relative velocity between two objects
                 if rel_vel == 0 or dist_between == 0: continue # Two objects will never collide if moving at same velocity
                 coll_time = dist_between / rel_vel # Time until the two objects collide
@@ -145,45 +95,94 @@ def handle_movement(objects: list[MoveableObject], static_objects: list[Object],
                 if coll_time >= 0 and coll_time < closest_time and overlapping_x(object1, object2, coll_time): # Check that two objects will collide and that the time is closer than closest_time and that two objects are at overlapping y height
                     closest_time = coll_time
                     closest_objects = object1, object2
+                    collision_y = True
+                    collision_x = False
 
         # Check for any closer collisions with immoveable_objects
         for object1 in objects:
             for object2 in static_objects:
 
-                dist_between = min(object2.y - (object1.y + object1.width), (object2.y + object2.width) - object1.y, key=abs) # Closest distance between two objects, adjust for width
+                dist_between = min(object2.x - (object1.x + object1.width), (object2.x + object2.width) - object1.x, key=abs) # Closest distance between two objects, adjusted for width
+                rel_vel = object1.vx # Relative velocity between two objects
+                if rel_vel == 0 or dist_between == 0: continue # Two objects will never collide if moving at same velocity and if touching, Moveable_Object will be moving away
+                coll_time = dist_between / rel_vel # Time until the two objects collide
+
+                if coll_time >= 0 and coll_time < closest_time: # Check that two objects will collide and that the time is closer than closest_time and that the two objects are at overlapping x width
+                    closest_time = coll_time
+                    closest_objects = object1, object2
+                    collision_x = True
+                    collision_y = False
+
+                # Same again for y axis
+                dist_between = min(object2.y - (object1.y + object1.height), (object2.y + object2.height) - object1.y, key=abs) # Closest distance between two objects, adjusted for height
                 rel_vel = object1.vy # Relative velocity between two objects
                 if rel_vel == 0 or dist_between == 0: continue # Two objects will never collide if moving at same velocity and if touching, Moveable_Object will be moving away
                 coll_time = dist_between / rel_vel # Time until the two objects collide
 
-                if coll_time >= 0 and coll_time < closest_time: # Check that two objects will collide and that the time is closer than closest_time
+                if coll_time >= 0 and coll_time < closest_time: # Check that two objects will collide and that the time is closer than closest_time and that the two objects are at overlapping y height
                     closest_time = coll_time
                     closest_objects = object1, object2
+                    collision_y = True
+                    collision_x = False
 
         if closest_objects[0]: # If the two objects collided
+            print("COLLISION X", closest_objects[0].vx, closest_objects[0].x, closest_objects[1].x, closest_time)
 
-            # Move closest objects to collision point
+            # Move closest_objects to collision point
+            closest_objects[0].x += closest_time * closest_objects[0].vx
             closest_objects[0].y += closest_time * closest_objects[0].vy
             if type(closest_objects[1]) == MoveableObject:
+                closest_objects[1].x += closest_time * closest_objects[1].vx
                 closest_objects[1].y += closest_time * closest_objects[1].vy
+                
+
+            # Due to floating points approximation, there can sometimes be slight differences in calculations
+            # This means that sometimes, when the two objects are moved next to each other (to where they collide)
+            # One can be slightly inside of the other, e.g. 0.000000000000002 inside
+            # This causes a big issue because the code expects the collision to be 100% perfect
+            # The following code sets both positions to the average, so they are definitely in exactly the same place
+            if collision_x:
+                left_object = min(closest_objects[0], closest_objects[1], key=lambda object: object.x)
+                right_object = max(closest_objects[0], closest_objects[1], key=lambda object: object.x)
+                average_position = (left_object.x + left_object.width + right_object.x) / 2 # Get average position of the two objects
+                left_object.x = average_position - left_object.width # The colliding bit of left object is the right side, so width has to be added
+                right_object.x = average_position
+                print(f"{left_object.x}, {right_object.x}")
+
+            if collision_y:
+                top_object = min(closest_objects[0], closest_objects[1], key=lambda object: object.y)
+                bottom_object = max(closest_objects[0], closest_objects[1], key=lambda object: object.y)
+                average_position = (top_object.y + top_object.height + bottom_object.y) / 2 # Get average position of the two objects
+                top_object.y = average_position - top_object.height # The colliding bit of top object is the bottom side, so height has to be added
+                bottom_object.y = average_position
+
+            # Move all other objects to same point in time that collision occurs
+            for object in objects:
+                if object not in closest_objects:
+                    object.x += closest_time * object.vx
+                    object.y += closest_time * object.vy
 
             # Set the two objects velocity to the average of both
             if type(closest_objects[1]) == MoveableObject:
-                closest_objects[0].vy, closest_objects[1].vy = closest_objects[1].vy, closest_objects[0].vy # Swap objects velocities, simulating 100% energy transfer
+                if collision_x:
+                    closest_objects[0].vx, closest_objects[1].vx = closest_objects[1].vx, closest_objects[0].vx # Swap objects x velocities, simulating 100% energy transfer
+                if collision_y:
+                    closest_objects[0].vy, closest_objects[1].vy = closest_objects[1].vy, closest_objects[0].vy # Swap objects y velocities, simulating 100% energy transfer
             else:
-                closest_objects[0].vy *= -1
-
-            # Move all other objects the same amount that the collision objects moved
-            for object in objects:
-                if object not in closest_objects:
-                    object.y += closest_time * object.vy
-
+                if collision_x:
+                    closest_objects[0].vx *= -1
+                if collision_y:
+                    closest_objects[0].vy *= -1
+                
             # Subtract closest_time from dt as the game time has advance by closest_time seconds
             dt -= closest_time
+            print("UPDATED X", closest_objects[0].vx, closest_objects[0].x, closest_objects[1].x, dt)
 
         # If no collision
         else:
             # Move objects the rest of the way, then break to move onto the y velocity
             for object in objects:
+                object.x += dt * object.vx
                 object.y += dt * object.vy
             break
 
@@ -191,23 +190,23 @@ def handle_movement(objects: list[MoveableObject], static_objects: list[Object],
 def overlapping_y(object1: Object, object2: Object, coll_time: float = 0):
     """Check if two objects are overlapping in the y axis
     \nAdjusts y coords to collision positions"""
-    object1.y += coll_time * object1.y
-    object2.y += coll_time * object2.y
-    return ((object2.y <= object1.y <= object2.y + object2.height) or # top object1 overlaps object2
-            (object2.y <= object1.y + object1.height <= object2.y) or # bottom object1 overlaps object 2
-            (object1.y <= object2.y <= object1.y + object1.height) or # top object2 overlaps object1
-            (object1.y <= object2.y + object2.height <= object1.y)) # bottom object2 overlaps object 1
+    y1 = object1.y + coll_time * object1.y
+    y2 = object2.y + coll_time * object2.y
+    return ((y2 <= y1 <= y2 + object2.height) or # top object1 overlaps object2
+            (y2 <= y1 + object1.height <= y2) or # bottom object1 overlaps object 2
+            (y1 <= y2 <= y1 + object1.height) or # top object2 overlaps object1
+            (y1 <= y2 + object2.height <= y1)) # bottom object2 overlaps object 1
 
 
 def overlapping_x(object1: Object, object2: Object, coll_time: float = 0):
     """Check if two objects are overlapping in the x axis
     \nAdjusts x coords to collision positions"""
-    object1.x += coll_time * object1.x
-    object2.x += coll_time * object2.x
-    return ((object2.x <= object1.x <= object2.x + object2.height) or # top object1 overlaps object2
-            (object2.x <= object1.x + object1.height <= object2.x) or # bottom object1 overlaps object 2
-            (object1.x <= object2.x <= object1.x + object1.height) or # top object2 overlaps object1
-            (object1.x <= object2.x + object2.height <= object1.x)) # bottom object2 overlaps object 1
+    x1 = object1.x + coll_time * object1.x
+    x2 = object2.x + coll_time * object2.x
+    return ((x2 <= x1 <= x2 + object2.width) or # left object1 overlaps object2
+            (x2 <= x1 + object1.width <= x2) or # right object1 overlaps object 2
+            (x1 <= x2 <= x1 + object1.width) or # left object2 overlaps object1
+            (x1 <= x2 + object2.width <= x1)) # right object2 overlaps object 1
 
 
 def quit():
@@ -227,7 +226,7 @@ def main(menu: "_menu.Menu"):
     static_objects.append(Object(0, 0, WIDTH, 1, None))
     static_objects.append(Object(0, HEIGHT - 1, WIDTH, 1, None))
     from random import randint
-    for _ in range(10):
+    for _ in range(20):
         while True:
             x, y = randint(0, WIDTH - 100), randint(0, HEIGHT - 100)
             overlapping = False
@@ -247,13 +246,16 @@ def main(menu: "_menu.Menu"):
             keys_pressed = pygame.key.get_pressed()
 
             handle_player_movement(keys_pressed, objects)
+            print("STARTING COLLISION")
             handle_movement(objects, static_objects, delta_time)
             for object1 in objects:
                 for object2 in objects:
                     if object1 != object2 and overlapping_x(object1, object2) and overlapping_y(object1, object2):
                         print("ERROR")
+                        print(object1.vx, object2.vx)
+                        print(object1.x, object2.x)
+                        print(static_objects[0].x, static_objects[1].x)
                         paused = True
-                        menu.pause()
 
             draw_window(objects)
 
@@ -265,9 +267,9 @@ def main(menu: "_menu.Menu"):
                     update_playing_screen_size(menu)
 
                 elif event.type == pygame.KEYDOWN and event.__dict__["key"] == pygame.K_ESCAPE:
-                    paused = True
                     menu.pause()
-
+                    paused = True
+                    
             time2 = perf_counter()
             delta_time = time2 - time1
 
