@@ -126,7 +126,7 @@ def handle_movement(objects: list[MoveableObject], static_objects: list[Object],
                     collision_x = False
 
         if closest_objects[0]: # If the two objects collided
-            print("COLLISION X", closest_objects[0].vx, closest_objects[0].x, closest_objects[1].x, closest_time)
+            print("COLLISION", closest_objects[0].vx, closest_objects[0].x, closest_objects[1].x, closest_time)
 
             # Move closest_objects to collision point
             closest_objects[0].x += closest_time * closest_objects[0].vx
@@ -136,12 +136,13 @@ def handle_movement(objects: list[MoveableObject], static_objects: list[Object],
                 closest_objects[1].y += closest_time * closest_objects[1].vy
                 
 
-            # Due to floating points approximation, there can sometimes be slight differences in calculations
+            # Due to floating point's approximation, there can sometimes be slight differences in calculations
             # This means that sometimes, when the two objects are moved next to each other (to where they collide)
             # One can be slightly inside of the other, e.g. 0.000000000000002 inside
             # This causes a big issue because the code expects the collision to be 100% perfect
             # The following code sets both positions to the average, so they are definitely in exactly the same place
             if collision_x:
+                print("COLLISION X")
                 left_object = min(closest_objects[0], closest_objects[1], key=lambda object: object.x)
                 right_object = max(closest_objects[0], closest_objects[1], key=lambda object: object.x)
                 average_position = (left_object.x + left_object.width + right_object.x) / 2 # Get average position of the two objects
@@ -150,6 +151,7 @@ def handle_movement(objects: list[MoveableObject], static_objects: list[Object],
                 print(f"{left_object.x}, {right_object.x}")
 
             if collision_y:
+                print("COLLISION Y")
                 top_object = min(closest_objects[0], closest_objects[1], key=lambda object: object.y)
                 bottom_object = max(closest_objects[0], closest_objects[1], key=lambda object: object.y)
                 average_position = (top_object.y + top_object.height + bottom_object.y) / 2 # Get average position of the two objects
@@ -176,7 +178,7 @@ def handle_movement(objects: list[MoveableObject], static_objects: list[Object],
                 
             # Subtract closest_time from dt as the game time has advance by closest_time seconds
             dt -= closest_time
-            print("UPDATED X", closest_objects[0].vx, closest_objects[0].x, closest_objects[1].x, dt)
+            print("UPDATED", closest_objects[0].vx, closest_objects[0].x, closest_objects[1].x, dt)
 
         # If no collision
         else:
@@ -187,22 +189,22 @@ def handle_movement(objects: list[MoveableObject], static_objects: list[Object],
             break
 
 
-def overlapping_y(object1: Object, object2: Object, coll_time: float = 0):
+def overlapping_y(object1: MoveableObject, object2: MoveableObject | Object, coll_time: float = 0):
     """Check if two objects are overlapping in the y axis
     \nAdjusts y coords to collision positions"""
-    y1 = object1.y + coll_time * object1.y
-    y2 = object2.y + coll_time * object2.y
+    y1 = object1.y + coll_time * object1.vy
+    y2 = object2.y + coll_time * object2.vy if type(object2) == MoveableObject else object2.y
     return ((y2 <= y1 <= y2 + object2.height) or # top object1 overlaps object2
             (y2 <= y1 + object1.height <= y2) or # bottom object1 overlaps object 2
             (y1 <= y2 <= y1 + object1.height) or # top object2 overlaps object1
             (y1 <= y2 + object2.height <= y1)) # bottom object2 overlaps object 1
 
 
-def overlapping_x(object1: Object, object2: Object, coll_time: float = 0):
+def overlapping_x(object1: MoveableObject, object2: MoveableObject | Object, coll_time: float = 0):
     """Check if two objects are overlapping in the x axis
     \nAdjusts x coords to collision positions"""
-    x1 = object1.x + coll_time * object1.x
-    x2 = object2.x + coll_time * object2.x
+    x1 = object1.x + coll_time * object1.vx
+    x2 = object2.x + coll_time * object2.vx if type(object2) == MoveableObject else object2.x
     return ((x2 <= x1 <= x2 + object2.width) or # left object1 overlaps object2
             (x2 <= x1 + object1.width <= x2) or # right object1 overlaps object 2
             (x1 <= x2 <= x1 + object1.width) or # left object2 overlaps object1
@@ -226,12 +228,12 @@ def main(menu: "_menu.Menu"):
     static_objects.append(Object(0, 0, WIDTH, 1, None))
     static_objects.append(Object(0, HEIGHT - 1, WIDTH, 1, None))
     from random import randint
-    for _ in range(20):
+    for _ in range(50):
         while True:
             x, y = randint(0, WIDTH - 100), randint(0, HEIGHT - 100)
             overlapping = False
             for obj in objects:
-                if overlapping_x(Object(x, y, 100, 100, None), obj) and overlapping_y(Object(x, y, 100, 100, None), obj):
+                if overlapping_x(MoveableObject(x, y, 0, 0, 100, 100, None), obj) and overlapping_y(MoveableObject(x, y, 0, 0, 100, 100, None), obj):
                     overlapping = True
             if not overlapping:
                 break
@@ -252,8 +254,8 @@ def main(menu: "_menu.Menu"):
                 for object2 in objects:
                     if object1 != object2 and overlapping_x(object1, object2) and overlapping_y(object1, object2):
                         print("ERROR")
-                        print(object1.vx, object2.vx)
-                        print(object1.x, object2.x)
+                        print(object1.vx, object2.vx, object1.vy, object2.vy)
+                        print(object1.x, object2.x, object1.y, object2.y)
                         print(static_objects[0].x, static_objects[1].x)
                         paused = True
 
