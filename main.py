@@ -80,7 +80,7 @@ def handle_movement(objects: list[MoveableObject], static_objects: list[Object],
                 if rel_vel == 0 or dist_between == 0: continue # Two objects will never collide if moving at same velocity
                 coll_time = dist_between / rel_vel # Time until the two objects collide
 
-                if coll_time >= 0 and coll_time < closest_time and overlapping_y(object1, object2, coll_time): # Check that two objects will collide and that the time is closer than closest_time
+                if coll_time >= 0 and coll_time < closest_time and overlapping_y(object1, object2, coll_time): # Check that two objects will collide and that the time is closer than closest_time and that the two objects are at overlapping x width
                     closest_time = coll_time
                     closest_objects = object1, object2
                     collision_x = True
@@ -107,7 +107,7 @@ def handle_movement(objects: list[MoveableObject], static_objects: list[Object],
                 if rel_vel == 0 or dist_between == 0: continue # Two objects will never collide if moving at same velocity and if touching, Moveable_Object will be moving away
                 coll_time = dist_between / rel_vel # Time until the two objects collide
 
-                if coll_time >= 0 and coll_time < closest_time: # Check that two objects will collide and that the time is closer than closest_time and that the two objects are at overlapping x width
+                if coll_time >= 0 and coll_time < closest_time and overlapping_y(object1, object2, coll_time): # Check that two objects will collide and that the time is closer than closest_time and that the two objects are at overlapping x width
                     closest_time = coll_time
                     closest_objects = object1, object2
                     collision_x = True
@@ -119,7 +119,7 @@ def handle_movement(objects: list[MoveableObject], static_objects: list[Object],
                 if rel_vel == 0 or dist_between == 0: continue # Two objects will never collide if moving at same velocity and if touching, Moveable_Object will be moving away
                 coll_time = dist_between / rel_vel # Time until the two objects collide
 
-                if coll_time >= 0 and coll_time < closest_time: # Check that two objects will collide and that the time is closer than closest_time and that the two objects are at overlapping y height
+                if coll_time >= 0 and coll_time < closest_time and overlapping_x(object1, object2, coll_time):  # Check that two objects will collide and that the time is closer than closest_time and that two objects are at overlapping y height
                     closest_time = coll_time
                     closest_objects = object1, object2
                     collision_y = True
@@ -228,7 +228,7 @@ def main(menu: "_menu.Menu"):
     static_objects.append(Object(0, 0, WIDTH, 1, None))
     static_objects.append(Object(0, HEIGHT - 1, WIDTH, 1, None))
     from random import randint
-    for _ in range(50):
+    for _ in range(40):
         while True:
             x, y = randint(0, WIDTH - 100), randint(0, HEIGHT - 100)
             overlapping = False
