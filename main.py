@@ -108,7 +108,7 @@ def handle_movement(objects: list[MoveableObject], static_objects: list[Object],
             for object2 in static_objects:
 
                 dist_between = min(object2.x - (object1.x + object1.width), (object2.x + object2.width) - object1.x, key=abs) # Closest distance between two objects, adjusted for width
-                if object1.vx != dist_between != 0: # If touching, Moveable_Object will be moving away
+                if object1.vx != 0 and dist_between != 0: # If touching, Moveable_Object will be moving away
                     coll_time = dist_between / object1.vx # Time until the two objects collide
 
                     if coll_time >= 0 and coll_time < closest_time and overlapping_y(object1, object2, coll_time): # Check that two objects will collide and that the time is closer than closest_time and that the two objects are at overlapping x width
@@ -129,7 +129,7 @@ def handle_movement(objects: list[MoveableObject], static_objects: list[Object],
                         collision_x = False
 
         if closest_objects[0]: # If the two objects collided
-            print("COLLISION", closest_objects[0].vx, closest_objects[0].x, closest_objects[1].x, closest_time)
+            print("COLLISION", closest_objects[0], closest_objects[0].x, closest_objects[1].x, closest_time)
 
             # Move closest_objects to collision point
             closest_objects[0].x += closest_time * closest_objects[0].vx
@@ -231,7 +231,7 @@ def main(menu: "_menu.Menu"):
     static_objects.append(Object(0, 0, WIDTH, 1, None))
     static_objects.append(Object(0, HEIGHT - 1, WIDTH, 1, None))
     from random import randint
-    for _ in range(40):
+    for _ in range(60):
         while True:
             x, y = randint(0, WIDTH - 100), randint(0, HEIGHT - 100)
             overlapping = False
@@ -261,6 +261,7 @@ def main(menu: "_menu.Menu"):
                         print(f"Velocities: {object1.vy=} {object2.vy=}")
                         print(f"Coordinates: {object1.x=} {object2.x=}")
                         print(f"Coordinates: {object1.y=} {object2.y=}")
+                        print(f"Object1: {object1}, Object2: {object2}")
                         print("Delta time:", delta_time)
                         paused = True
 
@@ -287,7 +288,7 @@ def main(menu: "_menu.Menu"):
 
             elif event.type == pygame.VIDEORESIZE:
                 update_playing_screen_size(menu)
-                draw_window(objects)
+                draw_window(objects, delta_time)
                 menu.pause()
 
             elif event.type == pygame.KEYDOWN and event.__dict__["key"] == pygame.K_ESCAPE:
